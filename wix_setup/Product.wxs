@@ -1,0 +1,151 @@
+<?xml version='1.0' encoding='Windows-1252'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+  <!--'E0A03640-3095-4E7C-A55C-A912228A5F74' version 1.1.0-->
+  <!--'4526F607-33E6-4726-A61E-E10AF66E4012' version 1.1.1-->
+  <!--'834549BD-7A4E-4738-987C-76DCB46CCE60' version 1.1.2-->
+  <!--'246B9424-5428-4FC4-984A-C367DBD4D414' version 1.1.3-->
+  <!--'033547F7-6420-4A82-9C66-3807A9E00B51' version 1.1.4-->
+  <!--'FBA87126-5497-454B-A3FB-2E386EE0C6CE' version 1.1.5-->
+  <!--'A5363188-8D02-4D1E-95AD-672076C1AE14' version 1.1.6-->
+  <!-- To create an installer .msi which update previous version:
+       change the Product Id then increase the Product version,
+       change the latest version also in Upgrade both UpdgradeVersion
+  -->
+  <Product
+    Name='StrasGo'
+    Manufacturer='Club de Go de Strasbourg'
+    Id='4909D91F-4F3E-43BD-9AAE-82241DE785A2'
+    UpgradeCode='1492A4B4-8C40-454C-B558-DED21267F0E6'
+    Language='1033'
+    Codepage='1252'
+    Version='1.1.7'>
+    
+    <Package Id='*' Keywords='Installer' Description="StrasGo 1.0 Installer"
+        Comments='StrasGo permet de jouer à la règle Strasbourgeoise contre Pachi.' Manufacturer='Club de Go de Strasbourg'
+        InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
+
+    <Property Id="PREVIOUSVERSIONSINSTALLED" Secure="yes" />
+    <Property Id="ALLUSERS" Value="1" /> 
+    <Upgrade Id="1492A4B4-8C40-454C-B558-DED21267F0E6">
+      <UpgradeVersion Property='PREVIOUSVERSIONSINSTALLED' 
+                      OnlyDetect="no" IncludeMinimum='yes' 
+                      Minimum='1.0.0' IncludeMaximum='no' 
+                      Maximum='1.1.7' />
+
+      <UpgradeVersion Minimum="1.1.7" 
+                      IncludeMinimum="no" OnlyDetect="yes" 
+                      Language="1033" 
+                      Property="NEWERPRODUCTFOUND" />
+    </Upgrade>
+    
+    <WixVariable Id="WixUILicenseRtf" Value="bobpl.rtf" />
+    <Media Id='1' Cabinet='Sample.cab' EmbedCab='yes' DiskPrompt='CD-ROM #1' />
+    <Property Id='DiskPrompt' Value="Club de Go de Strasbourg Installation [1]" />
+    <Directory Id='TARGETDIR' Name='SourceDir'>
+      <Directory Id='ProgramFilesFolder' Name='PFiles'>
+        <Directory Id='INSTALLDIR' Name='StrasGo'>
+          <Component Id='MainExecutable' Guid='3D9C83FE-76FD-4BA7-AE46-522811783FA4'>
+            <File Id='strasgoEXE' Name='strasgo.exe' DiskId='1' Source='../Release/strasgo.exe' KeyPath='yes'>
+              <Shortcut Id="startmenuStrasGo" Directory="ProgramMenuDir" Name="StrasGo"
+                  WorkingDirectory='INSTALLDIR' Icon="strasgo.exe" IconIndex="0" Advertise="yes" />
+              <Shortcut Id="desktopStrasGo" Directory="DesktopFolder" Name="StrasGo"
+                  WorkingDirectory='INSTALLDIR' Icon="strasgo.exe" IconIndex="0" Advertise="yes" />
+            </File>
+          </Component>
+          <Component Id='pachiComp' Guid='AC08734E-98FF-4060-9240-DAB5D21E5E3A'>
+            <File Id='pachiEXE' Name='pachi.exe' DiskId='1' Source='../pachi/pachi.exe' KeyPath='yes' />
+          </Component>
+          <Component Id='pachiCompProb' Guid='353AF519-A183-45E1-98D4-7168ECBE005E'>
+            <File Id='pachiProb' Name='patterns.prob' DiskId='1' Source='../pachi/patterns.prob' KeyPath='yes' />
+          </Component>
+          <Component Id='pachiCompSpat' Guid='560C2580-829B-4FC8-AC12-D3B7D862FA26'>
+            <File Id='pachiSpat' Name='patterns.spat' DiskId='1' Source='../pachi/patterns.spat' KeyPath='yes' />
+          </Component>
+          <Component Id='regex2Comp' Guid='390E7697-061E-4D07-AA2D-4B5EA8799A54'>
+            <File Id='regex2DLL' Name='regex2.dll' DiskId='1' Source='../pachi/regex2.dll' KeyPath='yes' />
+          </Component>
+          <Component Id='localizationComp' Guid='E097F8E8-8341-48EC-AA09-CA2A5B9D5A8B'>
+            <File Id='localizationLL' Name='WPFLocalization.dll' DiskId='1' Source='../Release/WPFLocalization.dll' KeyPath='yes' />
+          </Component>
+          <Directory Id='FR_DIR' Name='fr-FR'>
+            <Component Id='locResourceComp' Guid='D701AE7A-D9B0-460E-95F4-61A13CAF1B48'>
+              <File Id='locResource' Name='gui_wpf.resources.dll' DiskId='1' Source='../Release/fr-FR/gui_wpf.resources.dll' KeyPath='yes' />
+            </Component>
+          </Directory>
+          <Directory Id='SOUNDDIR' Name='sounds'>
+            <Component Id='soundStoneComp' Guid='FCE56B69-542F-4F85-8A85-F8CD87BDD39B'>
+              <File Id='soundStone' Name='stone.mp3' DiskId='1' Source='../Release/sounds/stone.mp3' KeyPath='yes' />
+            </Component>
+            <Component Id='soundBowlComp' Guid='D454EEA2-BAF9-49A5-BEB3-F81B0BCCD3A4'>
+              <File Id='soundBowl' Name='bowl.mp3' DiskId='1' Source='../Release/sounds/bowl.mp3' KeyPath='yes' />
+            </Component>
+          </Directory>
+        
+        </Directory>
+      </Directory>
+      
+      <Directory Id="ProgramMenuFolder" Name="Programs">
+        <Directory Id="ProgramMenuDir" Name="StrasGo">
+          <Component Id="ProgramMenuDir" Guid="5DD3D4E7-0C22-4861-8D42-16DC1F7484BF">
+            <RemoveFolder Id='ProgramMenuDir' On='uninstall' />
+            <RegistryValue Root='HKCU' Key='Software\[ProductName]' Type='string' Value='' KeyPath='yes' />
+          </Component>
+        </Directory>
+      </Directory>
+
+      <Directory Id="DesktopFolder" Name="Desktop" />
+
+    </Directory>
+
+    <Feature Id='Complete' Level='1'>
+      <ComponentRef Id='MainExecutable' />
+      <ComponentRef Id='pachiComp' />
+      <ComponentRef Id='pachiCompProb' />
+      <ComponentRef Id='pachiCompSpat' />
+      <ComponentRef Id='regex2Comp' />
+      <ComponentRef Id='localizationComp' />
+      <ComponentRef Id='locResourceComp' />
+      <ComponentRef Id='soundStoneComp' />
+      <ComponentRef Id='soundBowlComp' />
+      <ComponentRef Id='ProgramMenuDir' />
+    </Feature>
+
+    <Icon Id="strasgo.exe" SourceFile="../Release/strasgo.exe" />
+
+    <!-- Step 2: Add UI to your installer / Step 4: Trigger the custom action -->
+    <UI>
+      <UIRef Id="WixUI_Minimal" />
+      <Publish Dialog="ExitDialog"
+          Control="Finish"
+          Event="DoAction"
+          Value="LaunchApplication">WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed</Publish>
+    </UI>
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Exécuter strasgo.exe" />
+
+    <Property Id="WixShellExecTarget" Value="[#strasgoEXE]" />
+    <CustomAction Id="LaunchApplication" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes" />
+    
+    <InstallUISequence>
+      <Custom Action="UIandAdvertised" Sequence="3">
+        ProductState=1
+      </Custom>
+
+      <LaunchConditions After="AppSearch" />
+    </InstallUISequence>
+    
+    <CustomAction Id="PreventDowngrading" Error="Newer version of this product is already installed." />
+    <CustomAction Id="UIandAdvertised" Error="Something about the UI."/>
+    
+    <!-- Remove exist products before install -->
+    <InstallExecuteSequence>
+
+      <Custom Action="PreventDowngrading" After="FindRelatedProducts">
+        NEWERPRODUCTFOUND AND NOT Installed
+      </Custom>
+
+      <LaunchConditions After="AppSearch" />
+      <RemoveExistingProducts Before="InstallInitialize" />
+    </InstallExecuteSequence>
+  
+  </Product>
+</Wix>
