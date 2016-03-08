@@ -1,0 +1,245 @@
+﻿<Window x:Class="gui_wpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:gui_wpf="clr-namespace:gui_wpf.UI"
+        Title="StrasGo" Height="768" Width="1024" >
+    <Window.Resources>
+
+        <BitmapImage x:Key="FR_flag" UriSource="/gui_wpf;component/resources/french_flag.gif" />
+        <BitmapImage x:Key="EN_flag" UriSource="/gui_wpf;component/resources/uk_flag.png" />
+
+
+        <!-- Colors -->
+        <SolidColorBrush x:Key="mainBackground" Color="#F7CAAC" />
+        <SolidColorBrush x:Key="textColor" Color="#000515" />
+        <SolidColorBrush x:Key="pachiTextColor" Color="#000515" />
+        <SolidColorBrush x:Key="pachiBackground" Color="#C5E0B3" />
+        <LinearGradientBrush x:Key="buttonBackground" EndPoint="0.5,1.75" StartPoint="0.5,0.03" ColorInterpolationMode="SRgbLinearInterpolation">
+            <GradientStop Color="#B4C6E7" Offset="0.45" />
+            <GradientStop Color="Black" Offset="1" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="buttonOverBackground" EndPoint="0.5,1.75" StartPoint="0.5,0.03" ColorInterpolationMode="SRgbLinearInterpolation">
+            <GradientStop Color="#142D81" Offset="0.45" />
+            <GradientStop Color="Black" Offset="1" />
+        </LinearGradientBrush>
+        
+        <!-- Styles -->
+        <Style TargetType="Grid">
+            <Setter Property="Background" Value="{DynamicResource mainBackground}" />
+        </Style>
+        <Style TargetType="Label">
+            <Setter Property="Foreground" Value="{DynamicResource textColor}" />
+        </Style>
+        <Style TargetType="Expander">
+            <Setter Property="Foreground" Value="{DynamicResource textColor}" />
+        </Style>
+        <Style x:Key="StyleButton" >
+            <Setter Property="Control.Foreground" Value="{DynamicResource textColor}" />
+            <Setter Property="Control.Background" Value="{DynamicResource buttonBackground}"/>
+            <Setter Property="Control.FontSize" Value="45" />
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="22">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="Control.IsMouseOver" Value="True">
+                    <Setter Property="Control.Background" Value="{DynamicResource buttonOverBackground}"/>
+                    <Setter Property="Control.Foreground" Value="{DynamicResource buttonBackground}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="SmallButton" BasedOn="{StaticResource StyleButton}" TargetType="Button">
+            <Setter Property="Control.FontSize" Value="18" />
+            <Setter Property="Control.FontWeight" Value="Bold" />
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="15">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="{DynamicResource pachiBackground}"/>
+            <Setter Property="Foreground" Value="{DynamicResource pachiTextColor}" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+        
+    </Window.Resources>
+
+    <!-- Main Grid -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Main menu should be ZIndex 2 -->
+        <Grid Name="menuGridOverlay" Grid.Row="0" Panel.ZIndex="2" >
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+                <Button Click="EN_Click" Margin="5,5,5,5" VerticalAlignment="Top" Height="22" Width="35" >
+                    <StackPanel>
+                        <Image Source="{StaticResource EN_flag}" />
+                    </StackPanel>
+                </Button>
+                <Button Click="FR_Click" Margin="5,5,5,5" VerticalAlignment="Top" Height="22" Width="35" >
+                    <StackPanel>
+                        <Image Source="{StaticResource FR_flag}" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                <Button FontSize="25" Content="{Loc L_playBlack}" Click="Vs_Pachi_White_Click"  Margin="5,40,5,5" VerticalAlignment="Top" Height="150" Style="{StaticResource StyleButton}">
+                    
+                    <!--
+                    <StackPanel Orientation="Horizontal" >
+                        <Image Source="resources/pachi_blanc.jpg" Stretch="Uniform" />
+                    </StackPanel>
+                    -->
+                </Button>
+                <Button FontSize="25" Content="{Loc L_playWhite}" Click="Vs_Pachi_Black_Click" Margin="5,40,5,5" VerticalAlignment="Top" Height="150" Style="{StaticResource StyleButton}">
+                    <!--
+                    <StackPanel Orientation="Horizontal" >
+                        <Image Source="resources/pachi_noir.jpg" Stretch="Uniform" />
+                    </StackPanel>
+                    -->
+                </Button>
+                <Button Content="{Loc L_twoHumans}" Click="Only_Players_Button_Click" HorizontalAlignment="Left" Margin="5,40,5,5" VerticalAlignment="Top" Height="150" Width="300" Style="{StaticResource StyleButton}">
+                    <!--
+                    <StackPanel Orientation="Horizontal" >
+                        <Image Source="resources/human.jpg" Stretch="Uniform" />
+                    </StackPanel>
+                    -->
+                </Button>
+                
+                <!--
+                <Expander Header="Temps" FontWeight="Bold"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    IsExpanded="False" Width="310">
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Width="300">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="5">
+                            <Slider Maximum="10" Name="slider_time" TickPlacement="BottomRight" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="slider_time_ValueChanged"  Width="230"/>
+                            <TextBox Name="textbox_time" Text="{Binding ElementName=slider_time, Path=Value, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" Width="30" />
+                            <Label DockPanel.Dock="Left" FontWeight="Bold">min</Label>
+                        </StackPanel>
+                    </StackPanel>
+                </Expander>
+                -->
+            </StackPanel>
+        </Grid>
+
+        <Grid Name="settingsGridOverlay" Grid.Row="0" Panel.ZIndex="1">
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="5">
+                    <Label DockPanel.Dock="Left" FontWeight="Bold" Content="{Loc L_handicap}"></Label>
+                    <TextBox Name="textbox_handicap" Text="{Binding ElementName=slider_handicap, Path=Value, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" Width="30" />
+                    <Label DockPanel.Dock="Left" FontWeight="Bold" Content="{Loc L_stone}"></Label>
+                </StackPanel>
+                <Slider Maximum="9" Name="slider_handicap" TickPlacement="BottomRight" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="slider_handicap_ValueChanged" />
+
+                <StackPanel Name="slider_time_label" Orientation="Horizontal" HorizontalAlignment="Center" Margin="5">
+                    <Label DockPanel.Dock="Left" FontWeight="Bold" Content="{Loc L_timeForPachi}"></Label>
+                    <TextBox Name="textbox_time" Text="{Binding ElementName=slider_time, Path=Value, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" Width="30" />
+                    <Label DockPanel.Dock="Left" FontWeight="Bold" Content="{Loc L_minute}"></Label>
+                </StackPanel>
+                <Slider Maximum="10" Name="slider_time" TickPlacement="BottomRight" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="slider_time_ValueChanged" />
+
+                <Button Content="{Loc L_play}" Click="Play_Button_Click" HorizontalAlignment="Left" Margin="5,40,5,5" VerticalAlignment="Top" Height="150" Width="300" Style="{StaticResource StyleButton}">
+                    <!--
+                    <StackPanel Orientation="Horizontal" >
+                        <Image Source="resources/human.jpg" Stretch="Uniform" />
+                    </StackPanel>
+                    -->
+                </Button>
+            </StackPanel>
+        </Grid>
+        
+        <Grid Grid.Row="0" Margin="5,5,5,5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="300" />
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Row="0" Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="40"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <Viewbox Grid.Row="0" Grid.Column="0" Margin="5,0,0,0">
+                    <gui_wpf:GoBoardPainter
+                        BoardSize="9"
+                        MouseHoverType="Stone"
+                        x:Name="goBoardPainter"
+                        MovePlayed="goBoardPainter_MovePlayed">
+                    </gui_wpf:GoBoardPainter>
+                </Viewbox>
+
+                <StackPanel Grid.Row="1" Name="navigation_menu" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Name="begin" Click="Begin_click" Padding="0,0,0,25" Margin="0,5,5,0" Width="50" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Style="{StaticResource SmallButton}">|&lt;&lt;</Button>
+                    <Button Name="previous" Content="&lt;" Click="Previous_click" Margin="0,5,5,0" Width="50" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"  Style="{StaticResource SmallButton}"/>
+                    <Button Name="next" Content="&gt;" Click="Next_click" Margin="0,5,5,0" Width="50" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"  Style="{StaticResource SmallButton}"/>
+                    <Button Name="end" Content="&gt;&gt;|" Click="End_click" Margin="0,5,5,0" Width="50" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"  Style="{StaticResource SmallButton}"/>
+                </StackPanel>
+            </Grid>
+
+            <Grid Grid.Row="0" Grid.Column="1">
+                <StackPanel VerticalAlignment="Center" Margin="5,5,5,0" >
+                    <CheckBox Name="checkbox_captured" Content="{Loc L_showCaptured}" Unchecked="captured_checked" Checked="captured_checked" Margin="0,0,5,5" />
+                    <CheckBox Name="checkbox_demo" Content="{Loc L_seePrevious}" Unchecked="mouse_over_checked" Checked="mouse_over_checked" Margin="0,0,5,5" />
+                    <TextBox IsReadOnly="True" Name="system_message" FontSize="25" HorizontalAlignment="Center" Width="300" Height="250" TextWrapping="Wrap" VerticalContentAlignment="Center" TextAlignment="Center" Text="Pachi réfléchit..." />
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBox Background="White" Foreground="Black" Text="--:--" FontSize="50" IsReadOnly="True" Name="white_clock" HorizontalAlignment="Center" Width="142" Height="80" TextAlignment="Center" VerticalAlignment="Center" Margin="0,5,5,0" />
+                        <TextBox Background="Black" Foreground="White" Text="--:--" FontSize="50" IsReadOnly="True" Name="black_clock" HorizontalAlignment="Center" Width="142" Height="80" TextAlignment="Center" VerticalAlignment="Center" Margin="0,5,5,0" />
+                    </StackPanel>
+
+                    <StackPanel Name="capturedPanel" Orientation="Horizontal">
+                        <TextBox Background="White" Foreground="Black" Text="0" FontSize="50" IsReadOnly="True" Name="white_capture" HorizontalAlignment="Center" Width="142" Height="80" TextAlignment="Center" VerticalAlignment="Center" Margin="0,5,5,0" />
+                        <TextBox Background="Black" Foreground="White" Text="0" FontSize="50" IsReadOnly="True" Name="black_capture" HorizontalAlignment="Center" Width="142" Height="80" TextAlignment="Center" VerticalAlignment="Center" Margin="0,5,5,0" />
+                    </StackPanel>
+
+                    
+                    <Button Name="pass_button" Content="{Loc L_pass}" Click="Pass_Button_Click" Margin="0,5,0,0" Height="100" Style="{StaticResource StyleButton}"/>
+                    <Button Name="resign_button" Content="{Loc L_resign}" Click="Resign_Button_Click" Margin="0,5,0,0" Height="100" Style="{StaticResource StyleButton}"/>
+                </StackPanel>
+            </Grid>
+
+            
+            <!-- Display as an overlay on the board: Ctrl + D -->
+            <DockPanel Name="debug_column" Visibility="Hidden">
+                <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="20"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" >
+                        <ScrollViewer>
+                            <TextBox Name="console_output" HorizontalAlignment="Left" TextWrapping="Wrap" Text="TextBlock" IsReadOnly="True" VerticalAlignment="Top" Height="Auto" Width="Auto"/>
+                        </ScrollViewer>
+                </Grid>
+                <Grid Grid.Row="1">
+                    <TextBox Name="console_input" KeyUp="console_KeyUp" HorizontalAlignment="Left" Height="Auto" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="300"/>
+                </Grid>
+                </Grid>
+            </DockPanel>
+        </Grid>
+        
+        
+    </Grid>
+</Window>
