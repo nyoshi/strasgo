@@ -8,6 +8,12 @@ namespace GTPEngine
 {
     public class GoGame
     {
+        public enum RulesType
+        {
+            normal,
+            capture_N
+        }
+
         #region Game is Over Event
         public class GameResultEventArgs : EventArgs
         {
@@ -46,6 +52,9 @@ namespace GTPEngine
         public List<GoTurn> Turns;  // keep track of every turn and affect the board
         public GoPoint KoPoint;
         public GoResult Result;
+        public RulesType GameRule;
+        public int NumberOfStonesToCapture; // use in the rules type capture 5 but it could be another number than 5 actually
+
         public bool IsGameOver;
 
         public GoTurn GetLastTurn() { return Turns.Count > 0 ? Turns.Last() : null; }
@@ -86,6 +95,8 @@ namespace GTPEngine
             Turns = new List<GoTurn>();
             KoPoint = null;
             IsGameOver = false;
+            GameRule = RulesType.normal;
+            NumberOfStonesToCapture = 5;
 
             m_currentTurn = 0;
             m_colorToMove = GameInfo.Handicap < 2 ? GoColor.BLACK : GoColor.WHITE;
@@ -126,7 +137,29 @@ namespace GTPEngine
                     }
 
                     // two pass the game is over
-                    OnGameIsOver(new GameResultEventArgs(winner, score, blackScore, whiteScore, false));
+                    switch (GameRule)
+                    {
+                        case RulesType.normal:
+                            OnGameIsOver(new GameResultEventArgs(winner, score, blackScore, whiteScore, false));
+                            break;
+                        case RulesType.capture_N:
+                            int numberOfCapturesForWhite = GetNumberOfCapturedStonesFor(GoColor.WHITE);
+                            int numberOfCapturesForBlack = GetNumberOfCapturedStonesFor(GoColor.BLACK);
+                            GoColor moreCaptures = numberOfCapturesForWhite == numberOfCapturesForBlack 
+                                ? GoColor.EMPTY 
+                                : numberOfCapturesForWhite > numberOfCapturesForBlack 
+                                    ? GoColor.WHITE 
+                                    : GoColor.BLACK;
+                            OnGameIsOver(new GameResultEventArgs(moreCaptures
+                            , 0
+                            , numberOfCapturesForBlack
+                            , numberOfCapturesForWhite
+                            , false));
+                            break;
+                        default:
+                            throw new Exception("Error: unsupported rules type!");
+                    }
+
                 }
 
                 GoTurn thisTurn = new GoTurn(move, m_currentTurn);
@@ -239,6 +272,20 @@ namespace GTPEngine
                 {
                     // otherwise reinitialise the ko to null
                     KoPoint = null;
+                }
+
+                // if it capture and we are playing the capture 5 stones rules
+                // we need to check if the game is over
+                if (GameRule == RulesType.capture_N && GetLastTurn().Killed != null && GetLastTurn().Killed.Count > 0)
+                {
+                    if (GetNumberOfCapturedStonesFor(m_colorToMove) >= NumberOfStonesToCapture)
+                    {                        
+                        OnGameIsOver(new GameResultEventArgs(m_colorToMove
+                            , 0
+                            , GetNumberOfCapturedStonesFor(GoColor.BLACK)
+                            , GetNumberOfCapturedStonesFor(GoColor.WHITE)
+                            , false));
+                    }
                 }
 
                 Clock.NotifyMovePlayed(m_colorToMove);

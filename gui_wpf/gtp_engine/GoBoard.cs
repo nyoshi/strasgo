@@ -58,9 +58,47 @@ namespace GTPEngine
                         Stones.Add(new GoPoint(5, 5), GoColor.BLACK);
                     }
                 }
+                else if (m_size == 13)
+                {
+                    if (handicap >= 2)
+                    {
+                        Stones.Add(new GoPoint(4, 4), GoColor.BLACK);
+                        Stones.Add(new GoPoint(10, 10), GoColor.BLACK);
+                    }
+                    if (handicap >= 3)
+                    {
+                        Stones.Add(new GoPoint(10, 4), GoColor.BLACK);
+                    }
+                    if (handicap >= 4)
+                    {
+                        Stones.Add(new GoPoint(4, 10), GoColor.BLACK);
+                    }
+                    if (handicap == 5)
+                    {
+                        Stones.Add(new GoPoint(7, 7), GoColor.BLACK);
+                    }
+                    if (handicap >= 6)
+                    {
+                        Stones.Add(new GoPoint(10, 7), GoColor.BLACK);
+                        Stones.Add(new GoPoint(4, 7), GoColor.BLACK);
+                    }
+                    if (handicap == 7)
+                    {
+                        Stones.Add(new GoPoint(7, 7), GoColor.BLACK);
+                    }
+                    if (handicap >= 8)
+                    {
+                        Stones.Add(new GoPoint(7, 4), GoColor.BLACK);
+                        Stones.Add(new GoPoint(7, 10), GoColor.BLACK);
+                    }
+                    if (handicap == 9)
+                    {
+                        Stones.Add(new GoPoint(7, 7), GoColor.BLACK);
+                    }
+                }
                 else
                 {
-                    throw new Exception(String.Format("Dunno how to put {0} handicap stones on that {1} size!", handicap, size)); 
+                    throw new Exception(String.Format("Dunno how to put {0} handicap stones on that {1} size!", handicap, size));
                 }
             }
         }

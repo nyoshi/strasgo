@@ -48,6 +48,8 @@ namespace GTPEngine
         private Queue<String> m_commands;
         private bool m_waitingForAnswer;
         private GoColor m_lastColorAsked;
+        private string m_expectedAnswer;
+        private bool m_invalidateAnyMoves;
 
         #endregion
 
@@ -56,7 +58,7 @@ namespace GTPEngine
         public GoEngineWrapper( Parameters param )
         {
             // create the go engine in a process
-            m_goProcess = new Process();
+            m_goProcess = new Process( );
             m_goProcess.StartInfo.FileName = param.filename;
             m_goProcess.StartInfo.Arguments = param.arguments;
 
@@ -92,7 +94,7 @@ namespace GTPEngine
 
             // send first command and verify exe
             SendCommand("name");
-                
+            m_expectedAnswer = "= Pachi UCT";
         }
 
         void m_goProcess_Disposed(object sender, EventArgs e)
@@ -124,9 +126,7 @@ namespace GTPEngine
 
         private void OutputHandler(object sendingProcess, DataReceivedEventArgs outLine)
         {
-            m_waitingForAnswer = false;
-
-            Console.Write(outLine.Data);
+            Console.WriteLine(outLine.Data);
             // Collect the sort command output. 
             if (!String.IsNullOrEmpty(outLine.Data))
             {
@@ -136,21 +136,44 @@ namespace GTPEngine
                     ResponsePushed(this, new ResponseEventArgs(outLine.Data));
                 }
 
+                if (!string.IsNullOrEmpty(m_expectedAnswer))
+                {
+                    if (m_expectedAnswer != outLine.Data)
+                    {
+                        throw new Exception("The program Pachi is not behaving as expected! The program needs to shutdown!");
+                    }
+                    else
+                    {
+                        // we can clear that expected answer then
+                        m_expectedAnswer = null;
+                    }
+                }
+
                 // TODO proper parsing with regex to avoid errors
                 // Analyse the response
-                GoMove move = null;
                 if (outLine.Data.StartsWith("="))
                 {
                     m_waitingForAnswer = false;
+
+                    if (m_invalidateAnyMoves)
+                    {
+                        return;
+                    }
+
                     if (outLine.Data == "= pass")
                     {
-                        move = new GoMove(m_lastColorAsked, null, true);
+                        GoMove move = new GoMove(m_lastColorAsked, null, true);
+                        // Send the play
+                        if (HasPlayed != null && move != null)
+                        {
+                            HasPlayed(this, move);
+                        }
                     }
                     else
                     {
                         // parse the answer
                         String coord = outLine.Data.Substring(2);
-                        if (coord.Length == 2)
+                        if (coord.Length >= 2)
                         {
                             int x = (int)(coord[0] - 'A') + 1;
                             // because I column doesn't exist
@@ -161,17 +184,37 @@ namespace GTPEngine
 
                             int y = int.Parse(coord.Substring(1));
                             GoPoint point = new GoPoint(x, y);
-                            move = new GoMove(m_lastColorAsked, point, false);
+                            GoMove move = new GoMove(m_lastColorAsked, point, false);
+
+                            // Send the play
+                            if (HasPlayed != null && move != null)
+                            {
+                                HasPlayed(this, move);
+                            }
                         }
                     }
                 }
-                // Send the play
-                if (HasPlayed != null && move != null)
+
+            }
+
+            ExecuteNextCommand();
+        }
+
+        public int CommandsInQueueCount()
+        {
+            return m_commands.Count;
+        }
+
+        public bool isInQueue(String command)
+        {
+            foreach (String commandInQueue in m_commands)
+            {
+                if (command == commandInQueue)
                 {
-                    HasPlayed(this, move);
+                    return true;
                 }
             }
-            ExecuteNextCommand();
+            return false;
         }
 
         public void ExecuteNextCommand()
@@ -181,8 +224,17 @@ namespace GTPEngine
                 if (m_commands.Count > 0)
                 {
                     String command = m_commands.Dequeue();
+                    
+                    if (command.StartsWith("genmove") || command.StartsWith("play"))
+                    {
+                        m_invalidateAnyMoves = false;
+                    }
+                    
+
                     if (!String.IsNullOrEmpty(command))
                     {
+                        Console.WriteLine(command);
+
                         m_streamWriter.WriteLine(command);
                         m_waitingForAnswer = true;
                         // Send event to notify response
@@ -202,6 +254,12 @@ namespace GTPEngine
         public void SendCommand(String command)
         {
             m_commands.Enqueue(command);
+
+            if (command == "clear_board")
+            {
+                m_invalidateAnyMoves = true;
+            }
+
             ExecuteNextCommand();
         }
 
@@ -237,21 +295,43 @@ namespace GTPEngine
             {
                 //private static String[] HandicapPoint = { "C3", "G7", "C7", "G3", "E5", "C5", "G5", "E3", "E7" };
                 String handicapCommand = "set_free_handicap ";
-                switch(gameInfo.Handicap)
+                if (gameInfo.Size == 9)
                 {
-                    case 2: handicapCommand += "C3 G7"; break;
-                    case 3: handicapCommand += "C3 G7 G3"; break;
-                    case 4: handicapCommand += "C3 G7 G3 C7"; break;
-                    case 5: handicapCommand += "C3 G7 G3 C7 E5"; break;
-                    case 6: handicapCommand += "C3 G7 G3 C7 C5 G5"; break;
-                    case 7: handicapCommand += "C3 G7 G3 C7 E5 C5 G5"; break;
-                    case 8: handicapCommand += "C3 G7 G3 C7 C5 G5 E3 E7"; break;
-                    case 9: handicapCommand += "C3 G7 G3 C7 E5 C5 G5 E3 E7"; break;
-                    default:
-                        // unhandle case
-                        handicapCommand = String.Empty;
-                        break;
+                    switch (gameInfo.Handicap)
+                    {
+                        case 2: handicapCommand += "C3 G7"; break;
+                        case 3: handicapCommand += "C3 G7 G3"; break;
+                        case 4: handicapCommand += "C3 G7 G3 C7"; break;
+                        case 5: handicapCommand += "C3 G7 G3 C7 E5"; break;
+                        case 6: handicapCommand += "C3 G7 G3 C7 C5 G5"; break;
+                        case 7: handicapCommand += "C3 G7 G3 C7 E5 C5 G5"; break;
+                        case 8: handicapCommand += "C3 G7 G3 C7 C5 G5 E3 E7"; break;
+                        case 9: handicapCommand += "C3 G7 G3 C7 E5 C5 G5 E3 E7"; break;
+                        default:
+                            // unhandle case
+                            handicapCommand = String.Empty;
+                            break;
+                    }
                 }
+                else if (gameInfo.Size == 13)
+                {
+                    switch (gameInfo.Handicap)
+                    {
+                        case 2: handicapCommand += "D4 K10"; break;
+                        case 3: handicapCommand += "D4 K10 K4"; break;
+                        case 4: handicapCommand += "D4 K10 K4 D10"; break;
+                        case 5: handicapCommand += "D4 K10 K4 D10 G7"; break;
+                        case 6: handicapCommand += "D4 K10 K4 D10 D7 K7"; break;
+                        case 7: handicapCommand += "D4 K10 K4 D10 G7 D7 K7"; break;
+                        case 8: handicapCommand += "D4 K10 K4 D10 D7 K7 G4 G10"; break;
+                        case 9: handicapCommand += "D4 K10 K4 D10 G7 D7 K7 G4 G10"; break;
+                        default:
+                            // unhandle case
+                            handicapCommand = String.Empty;
+                            break;
+                    }
+                }
+
                 SendCommand(handicapCommand);
             }
         }
