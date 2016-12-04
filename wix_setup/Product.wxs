@@ -7,6 +7,11 @@
   <!--'033547F7-6420-4A82-9C66-3807A9E00B51' version 1.1.4-->
   <!--'FBA87126-5497-454B-A3FB-2E386EE0C6CE' version 1.1.5-->
   <!--'A5363188-8D02-4D1E-95AD-672076C1AE14' version 1.1.6-->
+  <!--'4909D91F-4F3E-43BD-9AAE-82241DE785A2' version 1.1.7-->
+  <!--'96209B7D-0497-409C-8539-DBDFEDF56874' version 1.1.8-->
+  <!--'6DFF085C-184E-48C2-A768-6EDEA019944E' version 1.1.9-->
+  <!--'65409968-9940-408A-B79E-305E67AA5EAB' version 1.2.0-->
+  <!--'571A4330-7BDD-4850-8D7C-905D6E71781D' version 1.2.1-->
   <!-- To create an installer .msi which update previous version:
        change the Product Id then increase the Product version,
        change the latest version also in Upgrade both UpdgradeVersion
@@ -14,11 +19,11 @@
   <Product
     Name='StrasGo'
     Manufacturer='Club de Go de Strasbourg'
-    Id='4909D91F-4F3E-43BD-9AAE-82241DE785A2'
+    Id='571A4330-7BDD-4850-8D7C-905D6E71781D'
     UpgradeCode='1492A4B4-8C40-454C-B558-DED21267F0E6'
     Language='1033'
     Codepage='1252'
-    Version='1.1.7'>
+    Version='1.2.1'>
     
     <Package Id='*' Keywords='Installer' Description="StrasGo 1.0 Installer"
         Comments='StrasGo permet de jouer à la règle Strasbourgeoise contre Pachi.' Manufacturer='Club de Go de Strasbourg'
@@ -30,9 +35,9 @@
       <UpgradeVersion Property='PREVIOUSVERSIONSINSTALLED' 
                       OnlyDetect="no" IncludeMinimum='yes' 
                       Minimum='1.0.0' IncludeMaximum='no' 
-                      Maximum='1.1.7' />
+                      Maximum='1.2.1' />
 
-      <UpgradeVersion Minimum="1.1.7" 
+      <UpgradeVersion Minimum="1.2.1" 
                       IncludeMinimum="no" OnlyDetect="yes" 
                       Language="1033" 
                       Property="NEWERPRODUCTFOUND" />
