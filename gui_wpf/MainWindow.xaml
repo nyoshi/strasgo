@@ -136,12 +136,14 @@
             </StackPanel>
         </Grid>
 
+        <!-- Game Settings panel -->
         <Grid Name="settingsGridOverlay" Grid.Row="0" Panel.ZIndex="1">
             <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="5">
                     <Label DockPanel.Dock="Left" FontWeight="Bold" Content="{Loc L_handicap}"></Label>
                     <TextBox Name="textbox_handicap" Text="{Binding ElementName=slider_handicap, Path=Value, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" Width="30" />
                     <Label DockPanel.Dock="Left" FontWeight="Bold" Content="{Loc L_stone}"></Label>
+                    
                 </StackPanel>
                 <Slider Maximum="9" Name="slider_handicap" TickPlacement="BottomRight" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="slider_handicap_ValueChanged" />
 
@@ -152,12 +154,23 @@
                 </StackPanel>
                 <Slider Maximum="10" Name="slider_time" TickPlacement="BottomRight" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="slider_time_ValueChanged" />
 
-                <Button Content="{Loc L_play}" Click="Play_Button_Click" HorizontalAlignment="Left" Margin="5,40,5,5" VerticalAlignment="Top" Height="150" Width="300" Style="{StaticResource StyleButton}">
+                
+                <Label DockPanel.Dock="Left" FontWeight="Bold" Content="{Loc L_goban_size}"></Label>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <RadioButton Name="radio_9" GroupName="board_size" Content="9x9" Margin="10,0,10,0"/>
+                    <RadioButton Name="radio_13" GroupName="board_size" Content="13x13" Margin="10,0,10,0"/>
+                </StackPanel>
+                
+                <Button Name="play_5" Content="{Loc L_play_5_Stones}" Control.FontSize="22" Click="Play_Button_Click" HorizontalAlignment="Left" Margin="5,40,5,5" VerticalAlignment="Top" Height="150" Width="300" Style="{StaticResource StyleButton}">
                     <!--
                     <StackPanel Orientation="Horizontal" >
                         <Image Source="resources/human.jpg" Stretch="Uniform" />
                     </StackPanel>
                     -->
+                </Button>
+                <CheckBox Name="checkbox_crosscut" Content="{Loc L_start_crosscut}" Margin="0,0,5,5" />
+                
+                <Button Content="{Loc L_play}" Click="Play_Button_Click" HorizontalAlignment="Left" Margin="5,40,5,5" VerticalAlignment="Top" Height="150" Width="300" Style="{StaticResource StyleButton}">
                 </Button>
             </StackPanel>
         </Grid>

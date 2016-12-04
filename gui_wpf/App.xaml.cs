@@ -76,11 +76,11 @@ namespace gui_wpf
         
         #region Methods
 
-        public void ClearBoard(int handicap, int minutes, bool isTwoHumanPlayers)
+        public void ClearBoard(int handicap, int minutes, bool isTwoHumanPlayers, int boardSize)
         {
             // set the game settings
             m_gameInfo = new GoGameInfo();
-            m_gameInfo.Size = 9;
+            m_gameInfo.Size = boardSize;
             m_gameInfo.Komi = 0.0f;
             m_gameInfo.Handicap = handicap;
             m_gameInfo.TimeSettings.MainTime = new TimeSpan(0, minutes, 0);
@@ -94,13 +94,40 @@ namespace gui_wpf
 
             if (m_gtpEngine != null)
             {
-                m_gtpEngine.ClearBoard();
-                m_gtpEngine.SetGameInfo(m_gameInfo);
                 if (!isTwoHumanPlayers)
                 {
-                    CatchUpGame();
+                    m_gtpEngine.SetGameInfo(m_gameInfo);
                 }
             }
+        }
+
+        public void PlaceCrosscut()
+        {
+            if( m_gameInfo.Size == 9 )
+            {
+                m_game.Board.Stones.Add(new GoPoint(5, 5), GoColor.BLACK);
+                m_game.Board.Stones.Add(new GoPoint(5, 6), GoColor.WHITE);
+                m_game.Board.Stones.Add(new GoPoint(6, 6), GoColor.BLACK);
+                m_game.Board.Stones.Add(new GoPoint(6, 5), GoColor.WHITE);
+
+                m_gtpEngine.PlayMove(GoColor.BLACK, 5, 5);
+                m_gtpEngine.PlayMove(GoColor.WHITE, 5, 6);
+                m_gtpEngine.PlayMove(GoColor.BLACK, 6, 6);
+                m_gtpEngine.PlayMove(GoColor.WHITE, 6, 5);
+            }
+            else if( m_gameInfo.Size == 13)
+            {
+                m_game.Board.Stones.Add(new GoPoint(7, 7), GoColor.BLACK);
+                m_game.Board.Stones.Add(new GoPoint(7, 8), GoColor.WHITE);
+                m_game.Board.Stones.Add(new GoPoint(8, 8), GoColor.BLACK);
+                m_game.Board.Stones.Add(new GoPoint(8, 7), GoColor.WHITE);
+
+                m_gtpEngine.PlayMove(GoColor.BLACK, 7, 7);
+                m_gtpEngine.PlayMove(GoColor.WHITE, 7, 8);
+                m_gtpEngine.PlayMove(GoColor.BLACK, 8, 8);
+                m_gtpEngine.PlayMove(GoColor.WHITE, 8, 7);
+            }
+
         }
 
         #endregion
@@ -109,7 +136,7 @@ namespace gui_wpf
         {
  	        base.OnStartup(e);
 
-            ClearBoard(0, 5, true);
+            ClearBoard(0, 5, true, 9);
         }
 
         void m_game_GameIsOver(object sender, GoGame.GameResultEventArgs e)
@@ -131,7 +158,7 @@ namespace gui_wpf
                     GoEngineWrapper.Parameters param;
                     param.name = "Pachi UTC";
                     param.filename = "pachi.exe";
-                    param.arguments = "stones_only,threads=2,max_tree_size=1000,resign_threshold=0,maximize_score";
+                    param.arguments = "stones_only,threads=4,max_tree_size=768,resign_threshold=0,maximize_score";
                     m_gtpEngine = new GoEngineWrapper(param);
 
                     m_gtpEngine.ResponsePushed += GtpEngine_ResponsePushed;
@@ -143,7 +170,7 @@ namespace gui_wpf
             }
         }
 
-        private void CatchUpGame()
+        public void CatchUpGame()
         {
             // play the moves
             if (m_game.Turns.Count > 0)
@@ -163,9 +190,9 @@ namespace gui_wpf
 
         public void GenerateMove(GoColor color)
         {
-            m_gtpEngine.GenerateMove(m_game.GetToMove()
-                , Game.Clock.getRemainingTime(m_game.GetToMove())
-                , Game.Clock.getByoyomiMove(m_game.GetToMove()));
+            m_gtpEngine.GenerateMove(color
+                , m_game.Clock.getRemainingTime(color)
+                , m_game.Clock.getByoyomiMove(color));
         }
 
         void GtpEngine_ResponsePushed(object sender, GoEngineWrapper.ResponseEventArgs e)

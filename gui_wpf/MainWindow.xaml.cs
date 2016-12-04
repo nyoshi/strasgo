@@ -21,6 +21,14 @@ using gui_wpf.UI;
 using GTPEngine;
 
 
+// TODO
+// to fix: when capture 5: player as white wins!
+// the message board still says pachi is thinking...
+
+// to fix: if quickly start a game with pachi and exit while he is thinking
+// his next move will count for the new game, but the game is not the same anymore! 
+
+
 namespace gui_wpf
 {
     /// <summary>
@@ -101,7 +109,10 @@ namespace gui_wpf
                     m_app.Game.Clock.Start();
                 }
                 goBoardPainter.DisplayMouseOver = value;
-                goBoardPainter.DisplayCountedStones = !value;
+                if (!value)
+                {
+                    goBoardPainter.DisplayCountedStones = m_app.Game.GameRule == GoGame.RulesType.normal;
+                }
             }
         }
 
@@ -134,9 +145,11 @@ namespace gui_wpf
                     }
                     foreach (GoMove move in moveToAdd)
                     {
-                        goBoardPainter.StoneList.Add(
-                                ConvertToBoard(move.Point),
-                                GetStone(move.Color));
+                        GoBoardPoint boardPoint = ConvertToBoard(move.Point);
+                        if( goBoardPainter.StoneList[boardPoint] == null)
+                        {
+                            goBoardPainter.StoneList.Add(boardPoint, GetStone(move.Color));
+                        }
                     }
                     if (m_app.Game.GetLastTurn() != null && !m_app.Game.GetLastTurn().Move.IsPass)
                     {
@@ -173,7 +186,8 @@ namespace gui_wpf
                 if (m_gtpEngineState != value)
                 {
                     m_gtpEngineState = value;
-                    if (!IsTwoHumanPlayer)
+
+                    if (!IsTwoHumanPlayer && IsGameRunning)
                     {
                         switch (m_gtpEngineState)
                         {
@@ -213,12 +227,13 @@ namespace gui_wpf
 
         #endregion
 
-
         #region Methods
+
 
         public MainWindow()
         {
             InitializeComponent();
+
             m_app = (App)Application.Current;
             
             // initialise sounds
@@ -240,20 +255,20 @@ namespace gui_wpf
 
             GtpEngineState = m_colorToPlay != m_app.PlayerColor ? GtpState.thinking : GtpState.ready;
 
-            IsGameRunning = true;
-
             m_app.GameIsOver += m_app_GameIsOver;
+
+            IsGameRunning = false;
 
             // TODO save/load user settings!
             slider_handicap.Value = m_app.Game.GameInfo.Handicap;
             slider_time.Value = MainTimeForPachi;
 
             console_output.Text = String.Empty;
-
-            IsGameRunning = false;
             debug_column.Visibility = Visibility.Hidden;
 
             capturedPanel.Visibility = System.Windows.Visibility.Collapsed;
+
+            radio_9.IsChecked = true;
 
             displayMenuOverlay();
             InitUI(MainTimeForPachi);
@@ -270,20 +285,27 @@ namespace gui_wpf
 
         void timer_Tick(object sender, EventArgs e)
         {
-            // update pachi message if needed
-            if (m_gtpEngineState == GtpState.loading)
+            if (IsGameRunning)
             {
-                system_message.Text = Properties.Resources.ResourceManager.GetString("L_pachiGettingReady") + (system_message.Text.EndsWith("...") ? "" 
-                    : system_message.Text.EndsWith("..") ? "..." 
-                    : system_message.Text.EndsWith(".") ? ".." 
-                    : ".");
-            }
-            else if (m_gtpEngineState == GtpState.thinking)
-            {
-                system_message.Text = Properties.Resources.ResourceManager.GetString("L_pachiThinking") + (system_message.Text.EndsWith("...") ? ""
-                    : system_message.Text.EndsWith("..") ? "..."
-                    : system_message.Text.EndsWith(".") ? ".."
-                    : ".");
+                // update pachi message if needed
+                if (m_gtpEngineState == GtpState.loading)
+                {
+                    system_message.Text = Properties.Resources.ResourceManager.GetString("L_pachiGettingReady") + (system_message.Text.EndsWith("...") ? ""
+                        : system_message.Text.EndsWith("..") ? "..."
+                        : system_message.Text.EndsWith(".") ? ".."
+                        : ".");
+                }
+                else if (m_gtpEngineState == GtpState.thinking)
+                {
+                    system_message.Text = Properties.Resources.ResourceManager.GetString("L_pachiThinking") + (system_message.Text.EndsWith("...") ? ""
+                        : system_message.Text.EndsWith("..") ? "..."
+                        : system_message.Text.EndsWith(".") ? ".."
+                        : ".");
+
+                    // check here if the last mssage was a genmove if not request again!
+                    checkIfPachiIsPlaying();
+
+                }
             }
 
             if (IsGameRunning)
@@ -316,12 +338,20 @@ namespace gui_wpf
         {
             IsDemonstration = false;
 
+            // goboard size
+            goBoardPainter.BoardSize = radio_9.IsChecked.HasValue && radio_9.IsChecked.Value
+                ? 9 
+                : 13;
+
             resign_button.Content = Properties.Resources.ResourceManager.GetString("L_resign");
             slider_time.Visibility = System.Windows.Visibility.Visible;
             slider_time_label.Visibility = System.Windows.Visibility.Visible;
 
             // get handicap and time settings
-            m_app.ClearBoard((int)slider_handicap.Value, mainTimeInMin, IsTwoHumanPlayer);
+            m_app.ClearBoard((int)slider_handicap.Value
+                , mainTimeInMin
+                , IsTwoHumanPlayer
+                , goBoardPainter.BoardSize);
 
             // Some game related info
             ColorToPlay = m_app.GameInfo.Handicap > 1 ? GoColor.WHITE : GoColor.BLACK;  // that can be white if it is an handicap game!
@@ -332,17 +362,12 @@ namespace gui_wpf
             goBoardPainter.StoneList.Clear();
             goBoardPainter.LastMove.X = -1;
             goBoardPainter.KoPoint.X = -1;
-            goBoardPainter.ForbiddenMove.X = -1;
-            if (m_app.GameInfo.Handicap > 0)
-            {
-                // add handicap stones
-                foreach (KeyValuePair<GoPoint, GoColor> stone in m_app.Game.Board.Stones)
-                {
-                    goBoardPainter.StoneList.Add(ConvertToBoard(stone.Key), Stone.Black);
-                }
-            }
+            goBoardPainter.ForbiddenMove.X = -1;            
 
-            goBoardPainter.Redraw();
+            white_capture.Text = "0";
+            black_capture.Text = "0";
+
+            checkbox_captured.IsEnabled = true;
             //checkbox_captured.IsChecked = false;
             //capturedPanel.Visibility = System.Windows.Visibility.Collapsed;
         }
@@ -542,7 +567,7 @@ namespace gui_wpf
 
                         GtpEngineState = GtpState.thinking;
                     }
-                    else
+                    else if( !m_app.Game.IsGameOver )
                     {
                         // erase last message
                         system_message.Text = "";
@@ -572,7 +597,7 @@ namespace gui_wpf
                             system_message.Text = Properties.Resources.ResourceManager.GetString("L_wrongTurn");
                             break;
                         case GoMessageId.SUICIDE_MOVE:
-                            system_message.Text = Properties.Resources.ResourceManager.GetString("L_wrongTurn");
+                            system_message.Text = Properties.Resources.ResourceManager.GetString("L_suicide");
                             goBoardPainter.ForbiddenMove = ConvertToBoard(move.Point);
                             break;
                     }
@@ -627,6 +652,34 @@ namespace gui_wpf
                 }
             }
 
+            Button clicked = sender as Button;
+            if (clicked != null && clicked.Name == "play_5")
+            {
+                m_app.Game.GameRule = GoGame.RulesType.capture_N;
+                capturedPanel.Visibility = System.Windows.Visibility.Visible;
+                checkbox_captured.IsChecked = true;
+                checkbox_captured.IsEnabled = false;
+
+                // do we need to place a crosscut?
+                if (checkbox_crosscut.IsChecked.HasValue && checkbox_crosscut.IsChecked.Value)
+                {
+                    m_app.PlaceCrosscut();
+                }
+            }
+            else
+            {
+                m_app.Game.GameRule = GoGame.RulesType.normal;
+            }
+
+            // add additional stones
+            foreach (KeyValuePair<GoPoint, GoColor> stone in m_app.Game.Board.Stones)
+            {
+                goBoardPainter.StoneList.Add(ConvertToBoard(stone.Key), ConvertToBoardColor(stone.Value));
+            }
+
+            goBoardPainter.Redraw();
+
+            m_app.CatchUpGame();
             showOverlay(GridOverlay.board);
         }
 
@@ -777,16 +830,6 @@ namespace gui_wpf
             Navigate(m_app.Game.Turns.Count);
         }
 
-        private void EN_Click(object sender, RoutedEventArgs e)
-        {
-            LocalizationManager.UICulture = new CultureInfo("en-US");
-        }
-
-        private void FR_Click(object sender, RoutedEventArgs e)
-        {
-            LocalizationManager.UICulture = new CultureInfo("fr-FR");
-        }
-
         private void Navigate( int step )
         {
             // Stop any capturing stones animation
@@ -817,27 +860,81 @@ namespace gui_wpf
             goBoardPainter.Redraw();
         }
 
+        #region Localization buttons
+
+        private void EN_Click(object sender, RoutedEventArgs e)
+        {
+            LocalizationManager.UICulture = new CultureInfo("en-US");
+        }
+
+        private void FR_Click(object sender, RoutedEventArgs e)
+        {
+            LocalizationManager.UICulture = new CultureInfo("fr-FR");
+        }
+
+        #endregion
+
         #endregion
 
         #region Go game events
 
         void m_app_GameIsOver(object sender, GoGame.GameResultEventArgs e)
         {
+
+            // do not accept any moves after
+            IsGameRunning = false;
+
             if (!e.TimeOut)
             {
-                // display score
-                console_output.Text += String.Format("Black: {2}\nWhite: {3}\n{0}+{1}\n"
-                    , e.WinnerColor == GoColor.BLACK ? "B" : "W"
-                    , e.Score
-                    , e.BlackScore
-                    , e.WhiteScore);
+                if (m_app.Game.GameRule == GoGame.RulesType.normal)
+                {
+                    // display score
+                    console_output.Text += String.Format("Black: {2}\nWhite: {3}\n{0}+{1}\n"
+                        , e.WinnerColor == GoColor.BLACK ? "B" : "W"
+                        , e.Score
+                        , e.BlackScore
+                        , e.WhiteScore);
 
-                system_message.Text = String.Format(Properties.Resources.ResourceManager.GetString("L_twoPass") + "\n" + Properties.Resources.ResourceManager.GetString("L_result")
-                    , e.WhiteScore, e.WhiteScore > 1 ? "s" : ""
-                    , e.BlackScore, e.BlackScore > 1 ? "s" : ""
-                    , e.WinnerColor == GoColor.BLACK ? Properties.Resources.ResourceManager.GetString("L_black") : Properties.Resources.ResourceManager.GetString("L_white")
-                    , e.Score, e.Score > 1 ? "s" : ""
-                    );
+                    system_message.Text = String.Format(Properties.Resources.ResourceManager.GetString("L_twoPass") + "\n" + Properties.Resources.ResourceManager.GetString("L_result")
+                        , e.WhiteScore, e.WhiteScore > 1 ? "s" : ""
+                        , e.BlackScore, e.BlackScore > 1 ? "s" : ""
+                        , e.WinnerColor == GoColor.BLACK ? Properties.Resources.ResourceManager.GetString("L_black") : Properties.Resources.ResourceManager.GetString("L_white")
+                        , e.Score, e.Score > 1 ? "s" : ""
+                        );
+                }
+                else if (m_app.Game.GameRule == GoGame.RulesType.capture_N)
+                {
+                    if (m_app.Game.GetLastTurn().Move.IsPass)
+                    {
+                        system_message.Text = Properties.Resources.ResourceManager.GetString("L_twoPass") + "\n";
+                    }
+                    else
+                    {
+                        system_message.Text = string.Empty;
+                    }
+
+                    if (e.WinnerColor != GoColor.EMPTY)
+                    {
+                        system_message.Text += String.Format(Properties.Resources.ResourceManager.GetString("L_score_capture_N")
+                            , e.WinnerColor == GoColor.BLACK 
+                                ? Properties.Resources.ResourceManager.GetString("L_black") 
+                                : Properties.Resources.ResourceManager.GetString("L_white")
+                            , e.WinnerColor == GoColor.BLACK 
+                                ? e.BlackScore 
+                                : e.WhiteScore
+                            , e.WinnerColor == GoColor.BLACK
+                                ? e.WhiteScore
+                                : e.BlackScore
+                            );
+                    }
+                    else
+                    {
+                        system_message.Text += String.Format(Properties.Resources.ResourceManager.GetString("L_draw")                            
+                            , e.BlackScore
+                            , e.WhiteScore
+                            );
+                    }
+                }
             }
             else
             {
@@ -861,19 +958,50 @@ namespace gui_wpf
             resign_button.IsEnabled = true;
 
             // draw couting
-            goBoardPainter.DisplayCountedStones = true;
-
-            // do not accept any moves after
-            IsGameRunning = false;
+            goBoardPainter.DisplayCountedStones = (m_app.Game.GameRule == GoGame.RulesType.normal);
 
             pass_button.IsEnabled = false;
         }
 
+        private Stone ConvertToBoardColor( GoColor color)
+        {
+            switch( color)
+            {
+                case GoColor.BLACK: return Stone.Black;
+                case GoColor.WHITE: return Stone.White;
+                default: return Stone.Empty;
+            }
+            return Stone.Empty;
+        }
+
+        private void checkIfPachiIsPlaying()
+        {
+            GoColor pachiColor = Helper.GetOppositeColor(m_app.PlayerColor);
+            string genMoveCommand = String.Format("genmove {0}", GoEngineWrapper.GetColorLetter(pachiColor));
+
+            if (genMoveCommand != m_lasCommand)
+            {
+                if (m_engine.isInQueue(genMoveCommand))
+                {
+                    if (m_engine.CommandsInQueueCount() == 1)
+                    {
+                        m_engine.ExecuteNextCommand();
+                    }
+                }
+                else
+                {
+                    m_app.GenerateMove(pachiColor);
+                }
+            }
+        }
+
+        private string m_lasCommand;
         void GtpEngine_CommandPushed(object sender, GoEngineWrapper.ResponseEventArgs e)
         {
             this.Dispatcher.Invoke((Action)(() =>
             {
                 console_output.Text += e.RawResponse + "\n";
+                m_lasCommand = e.RawResponse;
             }));
         }
 
