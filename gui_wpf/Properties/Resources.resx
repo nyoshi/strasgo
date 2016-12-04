@@ -123,6 +123,12 @@
   <data name="L_black" xml:space="preserve">
     <value>Black</value>
   </data>
+  <data name="L_draw" xml:space="preserve">
+    <value>It is a {0}-{1} draw.</value>
+  </data>
+  <data name="L_goban_size" xml:space="preserve">
+    <value>Board size</value>
+  </data>
   <data name="L_handicap" xml:space="preserve">
     <value>Handicap:</value>
   </data>
@@ -148,7 +154,7 @@
     <value>Pass</value>
   </data>
   <data name="L_play" xml:space="preserve">
-    <value>Play!</value>
+    <value>Play Go!</value>
   </data>
   <data name="L_playAgain" xml:space="preserve">
     <value>Play again</value>
@@ -159,17 +165,26 @@
   <data name="L_playWhite" xml:space="preserve">
     <value>Play White against Pachi</value>
   </data>
+  <data name="L_play_5_Stones" xml:space="preserve">
+    <value>Play "Captures 5"!</value>
+  </data>
   <data name="L_resign" xml:space="preserve">
     <value>Resign</value>
   </data>
   <data name="L_result" xml:space="preserve">
     <value>White has {0} point{1} and Black has {2} point{3}. So {4} wins by {5} point{6}!</value>
   </data>
+  <data name="L_score_capture_N" xml:space="preserve">
+    <value>{0} won {1} - {2}! </value>
+  </data>
   <data name="L_seePrevious" xml:space="preserve">
     <value>Review previous moves</value>
   </data>
   <data name="L_showCaptured" xml:space="preserve">
     <value>Show number of captured stones</value>
+  </data>
+  <data name="L_start_crosscut" xml:space="preserve">
+    <value>Start with a crosscut</value>
   </data>
   <data name="L_stone" xml:space="preserve">
     <value>stones</value>

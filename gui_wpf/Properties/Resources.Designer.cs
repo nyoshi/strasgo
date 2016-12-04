@@ -79,6 +79,24 @@ namespace gui_wpf.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to It is a {0}-{1} draw..
+        /// </summary>
+        public static string L_draw {
+            get {
+                return ResourceManager.GetString("L_draw", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Board size.
+        /// </summary>
+        public static string L_goban_size {
+            get {
+                return ResourceManager.GetString("L_goban_size", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Handicap:.
         /// </summary>
         public static string L_handicap {
@@ -151,11 +169,20 @@ namespace gui_wpf.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Play!.
+        ///   Looks up a localized string similar to Play Go!.
         /// </summary>
         public static string L_play {
             get {
                 return ResourceManager.GetString("L_play", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Play &quot;Captures 5&quot;!.
+        /// </summary>
+        public static string L_play_5_Stones {
+            get {
+                return ResourceManager.GetString("L_play_5_Stones", resourceCulture);
             }
         }
         
@@ -205,6 +232,15 @@ namespace gui_wpf.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} won {1} - {2}! .
+        /// </summary>
+        public static string L_score_capture_N {
+            get {
+                return ResourceManager.GetString("L_score_capture_N", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Review previous moves.
         /// </summary>
         public static string L_seePrevious {
@@ -219,6 +255,15 @@ namespace gui_wpf.Properties {
         public static string L_showCaptured {
             get {
                 return ResourceManager.GetString("L_showCaptured", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Start with a crosscut.
+        /// </summary>
+        public static string L_start_crosscut {
+            get {
+                return ResourceManager.GetString("L_start_crosscut", resourceCulture);
             }
         }
         
